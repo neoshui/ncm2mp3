@@ -8,6 +8,7 @@ a = Analysis(
     ['ncm2mp3.py'],
     pathex=[],
     binaries=[],
+    #datas: Pyinstaller 打包添加 customtkinter 作为自定义数据目录，否则打包报错
     datas=[('d:\\pproject\\qmcflac2mp3\\venv\\lib\\site-packages\\customtkinter', 'customtkinter\\')],
     hiddenimports=[],
     hookspath=[],
@@ -20,6 +21,7 @@ a = Analysis(
     noarchive=False,
 )
 a.datas += [('icon.ico','D:\\Pproject\\qmcflac2mp3\\icon.ico','DATA')]
+#a.datas 添加程序图标 icon
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
@@ -42,5 +44,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    #icon 添加程序图标 icon
     icon='D:\\Pproject\\qmcflac2mp3\\icon.ico'
 )

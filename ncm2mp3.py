@@ -399,24 +399,13 @@ def MultiThreadChild(list, Number, return_dict):
     time.sleep(Number)
 
     music1f = list[0]
-    # if music1f.split('.')[-1] == 'ncm':
-    #     dump(music1f, Number)
     if music1f.split('.')[-1] == 'ncm':
         dump(music1f, Number)
     else:
         QQconvert(music1f, Number)
-    # try:
-    #     if music1f.split('.')[-1] == 'ncm':
-    #         dump(music1f, Number)
-    #     else:
-    #         QQconvert(music1f, Number)
-    # except Exception as e:
-    #     print('MultiThreadChild error', e)
-    #     EOut(music1f + f'Error  {e} : {e.args}' + "\n")
 
-    print("\n" + '[+][Process {} :Task Finish!'.format(Number))
     return_dict[Number] = Number
-    # process_bar.set(value=step)
+
 
 
 def delname():
@@ -432,72 +421,6 @@ def delname():
 
 def gtm(gyy):
     return re.findall(r'\[(.*?)\]', gyy)
-
-
-def main():
-    multiprocessing.freeze_support()
-    AllTheardNumber = 8
-    print('*')
-    print(' _  _          ___ __  __         _')
-    print('| \| |__ _ __ |_  )  \/  |_  _ __(_)__')
-    print("| .` / _| '  \ / /| |\/| | || (_-< / _|")
-    print('|_|\_\__|_|_|_/___|_|  |_|\_,_/__/_\__|')
-    print('===============================')
-    print('CopyRight 2020-2021 KGDSAVE SOFTWARE STUDIO')
-    print('Coded by CRMMC')
-    print('Sources: github.com/crmmc/Ncm2Music')
-    print('This is a tool to convent ncm file to music ')
-    print('add Music tags and get lyric,picture')
-    print(' And it can only convent qmc0,qmc3 and qmcflac to music')
-    print('===============================')
-    print('Time: ' + time.asctime())
-    time.sleep(2)
-    ncmfiles = glob.glob("*.ncm") + glob.glob('*.qmc3') + glob.glob('*.qmcflac') + glob.glob('*.qmc0')
-    if len(ncmfiles) < 1:
-        print('[MAIN]Netease Music or QQMusic Files No Found!')
-        os._exit(0)
-    if len(ncmfiles) < AllTheardNumber:
-        AllTheardNumber = len(ncmfiles)
-    t = [0, ] * AllTheardNumber
-    print('[MAIN]Running in a ' + sys.platform + ' system')
-    print('[MAIN]There are ' + str(len(ncmfiles)) + ' Files ')
-    print('[MAIN]Open {} Processes To Convent This Files!'.format(AllTheardNumber))
-    print('[MAIN]Press "Ctrl + c" to stop convent')
-    last = int(len(ncmfiles) % AllTheardNumber)
-    avg = int((len(ncmfiles) - last) / AllTheardNumber)
-    for ppo in range(0, AllTheardNumber):
-        ncmlist = []
-        if ppo == (AllTheardNumber - 1):
-            for o in range(int(avg * ppo), int(avg * (ppo + 1) + last)):
-                ncmlist.append(ncmfiles[o])
-            t[ppo] = Process(target=MultiThreadChild, args=(ncmlist, ppo), )
-            t[ppo].daemon = True
-            t[ppo].start()
-            ncmlist = []
-        else:
-            for o in range(int(avg * ppo), int(avg * (ppo + 1))):
-                ncmlist.append(ncmfiles[o])
-            t[ppo] = Process(target=MultiThreadChild, args=(ncmlist, ppo), )
-            t[ppo].daemon = True
-            t[ppo].start()
-            ncmlist = []
-    nnu = 0
-    time.sleep(2)
-    print('[Main] Waiting until All Process Finish!')
-    try:
-        for k in t:
-            k.join()
-    except:
-        print('[!]Warning! Main Thread Exit!')
-    print('[MAIN]' + '[' + time.asctime() + ']')
-    if os.path.exists('ncm2music_error.txt'):
-        if os.path.getsize('ncm2music_error.txt') < 10:
-            DelFile('ncm2music_error.txt')
-        else:
-            print('Please see -> ncm2music_error.txt <- Log file!')
-    delname()
-    print("[MAIN]ALL Jobs Finish!")
-
 
 def get_file(path):
     file_path = path
@@ -639,9 +562,7 @@ class App(customtkinter.CTk):
 
 
 if __name__ == '__main__':
-    # gui('./qq/')
-    # get_online_lrc('./qq/毛不易 - 无名的人.flac')
+    # 防止 Pyinstaller 打包 python 多进程程序出现多个主线程的问题
     multiprocessing.freeze_support()
     app = App()
-
     app.mainloop()
