@@ -8,6 +8,9 @@
 
 3、.qmcflac，.qmc0 暂不支持歌词文件
 
+4、主界面预览
+
+![img.png](img.png)
 
 
 ncm2mp3.py 主要功能基于 [Ncm2Music](https://github.com/crmmc/Ncm2Music) 添加 GUI
