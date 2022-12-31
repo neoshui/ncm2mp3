@@ -78,7 +78,7 @@ def TwoToOne(l1, l2):
 
 
 def GetLrcF(path, id, sname):
-    print('id,sname', id, sname)
+
     try:
         lrc_url = 'http://music.163.com/api/song/lyric?os=pc&id=' + str(id) + '&lv=-1&kv=-1&tv=-1'
         # lrc_url = 'http://music.163.com/api/song/lyric?' + 'id=' + str(id) + '&lv=1&kv=1&tv=-1'
@@ -89,14 +89,14 @@ def GetLrcF(path, id, sname):
         arhhc = json.loads(json_obj)
 
     except:
-        print('Get lrc error!')
+
         EOut('ERROR_IN_GET_HTML_lyric_tlyric:' + sname + "\n")
         return ''
     try:
         if len(arhhc['lrc']['lyric']) < 10:
             return -1
     except:
-        print('ERROR_IN_GET_ALL_lyric_tlyric')
+
         EOut('ERROR_IN_GET_ALL_lyric_tlyric:' + sname + "\n")
     if 'tlyric' in arhhc and arhhc['tlyric']['lyric'] != '':
         if 'lyric' in arhhc['tlyric']:
@@ -110,10 +110,10 @@ def GetLrcF(path, id, sname):
     try:
 
         open(path + sname + '.lrc', 'w').write(tolrc)
-        print('[Lyric] Get [' + sname + '] Successful!')
+
         return tolrc
     except:
-        print('ERROR_IN_WRITE_ALL_lyric_tlyric')
+
         EOut('ERROR_IN_WRITE_ALL_lyric_tlyric:' + sname + "\n")
 
 
@@ -159,19 +159,13 @@ def get_online_lrc(file_path):
         cryptor = AES.new(meta_key, AES.MODE_ECB)
         meta_data = unpad(cryptor.decrypt(meta_data))[6:]
         meta_data = json.loads(meta_data)
-        print(meta_data)
-        print(meta_data['musicId'])
-        print(meta_data['albumPic'])
-        print(meta_data['artist'][0][0])
-        print(meta_data['musicName'])
-        print(meta_data['alias'])
         GetLrcF(file_path, meta_data['musicId'], meta_data['musicName'])
     elif audio_type == 'mp3':
         mp3_info = MP3(file_path, ID3=EasyID3)
-        print(mp3_info)
+
     elif audio_type == 'flac':
         audio = FLAC(file_path)
-        print(audio)
+
 
 
 def CFG(a):
@@ -407,18 +401,6 @@ def MultiThreadChild(list, Number, return_dict):
     return_dict[Number] = Number
 
 
-
-def delname():
-    print('del empty files!')
-    for r in glob.glob('*'):
-        if os.path.getsize(r) < 32:
-            try:
-                os.remove(r)
-                print('[' + r + '] Delete !')
-            except:
-                print('[' + r + '] Delete Error!')
-
-
 def gtm(gyy):
     return re.findall(r'\[(.*?)\]', gyy)
 
@@ -482,8 +464,6 @@ def gui(audio_file):
             print('Please see -> ncm2music_error.txt <- Log file!')
     # delname()
     print("[MAIN]ALL Jobs Finish!")
-
-    print('return_dict', return_dict)
     showMessage(message='所选目录中的文件已转换完成！', timeout=1000 * 10)
 
 
@@ -555,10 +535,6 @@ class App(customtkinter.CTk):
                         timeout=1000 * 20)
         except:
             showMessage('请先选择包含将要转换文件的文件夹！再开始进行文件转换', timeout=1000 * 20)
-        # if self.start_flags:
-        #
-        # else:
-        #     showMessage('请先选择包含将要转换文件的文件夹！再开始进行文件转换', timeout=1000 * 20)
 
 
 if __name__ == '__main__':
