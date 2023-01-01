@@ -1,12 +1,12 @@
 
 # ncm2mp3
 
-1、支持 **.ncm**，**.qmcflac**，**.qmc0** 转换为 **.mp3**，**.flac**，**.mp3** 文件
+1、支持 **.ncm,.qmc0,.qmc3,.qmflac** 转换为 **.mp3,.flac** 文件
 
 
 2、支持通过 .ncm下载 .lrc 歌词，同时支持将歌词嵌入 .mp3 文件
 
-3、.qmcflac，.qmc0 暂不支持歌词文件
+3、.qmc0,.qmc3,.qmflac 暂不支持歌词文件
 
 4、主界面预览
 

@@ -9,7 +9,6 @@ import time
 from multiprocessing import Process, Manager
 import multiprocessing
 
-
 import re
 import os
 import sys
@@ -78,7 +77,6 @@ def TwoToOne(l1, l2):
 
 
 def GetLrcF(path, id, sname):
-
     try:
         lrc_url = 'http://music.163.com/api/song/lyric?os=pc&id=' + str(id) + '&lv=-1&kv=-1&tv=-1'
         # lrc_url = 'http://music.163.com/api/song/lyric?' + 'id=' + str(id) + '&lv=1&kv=1&tv=-1'
@@ -165,7 +163,6 @@ def get_online_lrc(file_path):
 
     elif audio_type == 'flac':
         audio = FLAC(file_path)
-
 
 
 def CFG(a):
@@ -392,17 +389,19 @@ def QQconvert(fin, RNUM):
 def MultiThreadChild(list, Number, return_dict):
     time.sleep(Number)
 
-    music1f = list[0]
-    if music1f.split('.')[-1] == 'ncm':
-        dump(music1f, Number)
-    else:
-        QQconvert(music1f, Number)
+    for music1f in list:
+
+        if music1f.split('.')[-1] == 'ncm':
+            dump(music1f, Number)
+        else:
+            QQconvert(music1f, Number)
 
     return_dict[Number] = Number
 
 
 def gtm(gyy):
     return re.findall(r'\[(.*?)\]', gyy)
+
 
 def get_file(path):
     file_path = path
@@ -464,22 +463,49 @@ def gui(audio_file):
             print('Please see -> ncm2music_error.txt <- Log file!')
     # delname()
     print("[MAIN]ALL Jobs Finish!")
-    showMessage(message='所选目录中的文件已转换完成！', timeout=1000 * 10)
+    showMessage('所选目录中的文件已转换完成！', type='message', timeout=120)
 
 
-def showMessage(message, type='info', timeout=1000 * 6000):
-    root = tkinter.Tk()
-    root.withdraw()
-    try:
-        root.after(timeout, root.destroy)
-        if type == 'info':
-            messagebox.showinfo('提示', message, master=root)
-        elif type == 'warning':
-            messagebox.showwarning('警告', message, master=root)
-        elif type == 'error':
-            messagebox.showerror('错误', message, master=root)
-    except:
-        pass
+def showMessage(message, type, timeout=6000):
+    if type == 'message':
+        root = customtkinter.CTk()
+        root.withdraw()
+        timeout = timeout * 1000
+        try:
+            root.after(timeout, root.destroy)
+            if type == 'message':
+                messagebox.showinfo('提示', message, master=root)
+            elif type == 'warning':
+                messagebox.showwarning('警告', message, master=root)
+            elif type == 'error':
+                messagebox.showerror('错误', message, master=root)
+        except:
+            pass
+    else:
+        app = customtkinter.CTk()
+        app.geometry("300x300")
+        app.grid_rowconfigure(0, weight=1)
+        app.grid_columnconfigure(0, weight=1)
+        tk_textbox = tkinter.Text(app, highlightthickness=0)
+        tk_textbox.grid(row=0, column=0, sticky="nsew")
+
+        ctk_textbox_scrollbar = customtkinter.CTkScrollbar(app, command=tk_textbox.yview)
+        ctk_textbox_scrollbar.grid(row=0, column=1, sticky="ns")
+
+        tk_textbox.configure(yscrollcommand=ctk_textbox_scrollbar.set)
+        tk_textbox.insert('insert', message)
+
+        def autoClose(timeout):
+            for i in range(timeout):
+                time.sleep(1)
+            try:
+                app.destroy()
+            except:
+                pass
+
+        t = threading.Thread(target=autoClose, args=(timeout,))
+        t.start()
+        app.mainloop()
 
 
 class App(customtkinter.CTk):
@@ -497,14 +523,14 @@ class App(customtkinter.CTk):
 
         explain = """
         1、首先点击选择文件夹按键\n
-        2、选择存放 .ncm(网易云) .qmcflac(QQ音乐)的文件夹\n
+        2、选择存放 ncm(网易云),qmc0,qmc3,qmflac(QQ音乐)的文件夹\n
         3、左下角显示转换文件所在文件夹路径，请确认\n
         4、点击开始转换按钮，将显示所有可转换文件列表\n
         5、等待弹出转换完成提示框，则所有转换已完成\n
         6、关闭程序，打开文件夹查看已转换文件\n
         """
 
-        self.textbox = customtkinter.CTkLabel(master=self, text=explain,text_color='#4888e5')
+        self.textbox = customtkinter.CTkLabel(master=self, text=explain, text_color='#4888e5')
         self.textbox.grid(row=0, column=0, columnspan=3, padx=10, pady=(10, 0), sticky='NSEW')
         # self.textbox.insert('0.0', explain)
 
@@ -531,10 +557,10 @@ class App(customtkinter.CTk):
             new_thread = threading.Thread(target=lambda x=1: gui(self.audio_file))
             new_thread.setDaemon(True)
             new_thread.start()
-            showMessage(f'开始转换，请等待转换完毕提示再关闭程序！二十秒后将自动关闭本提示窗口！ \n\n{self.file_list}',
-                        timeout=1000 * 20)
+            showMessage(f'开始转换，请等待转换完毕提示再关闭程序！三十秒后将自动关闭本提示窗口！ \n\n{self.file_list}',
+                        type='', timeout=30)
         except:
-            showMessage('请先选择包含将要转换文件的文件夹！再开始进行文件转换', timeout=1000 * 20)
+            showMessage('请先选择包含将要转换文件的文件夹！再开始进行文件转换', type='message', timeout=5)
 
 
 if __name__ == '__main__':
