@@ -8,6 +8,7 @@ import json
 import time
 from multiprocessing import Process, Manager
 import multiprocessing
+import queue
 
 import re
 import os
@@ -417,10 +418,8 @@ def get_file(path):
 
 
 def new_gui(audio_file):
-    print('audio_file', audio_file)
     with futures.ProcessPoolExecutor() as executor:
         res = executor.map(multi_process, audio_file)
-    print(len(list(res)))
 
     showMessage('所选目录中的文件已转换完成！', type='message', timeout=120)
 
@@ -432,7 +431,6 @@ def multi_process(music1f):
     else:
         QQconvert(music1f, 0)
 
-
     return 0
 
 
@@ -440,6 +438,7 @@ def showMessage(message, type, timeout=6000):
     if type == 'message':
         root = customtkinter.CTk()
         root.withdraw()
+        root.configure(bg="#a94826")
         timeout = timeout * 1000
         try:
             root.after(timeout, root.destroy)
@@ -523,6 +522,7 @@ class App(customtkinter.CTk):
         self.start_flags = True
 
     def start_convert(self):
+        RQueue = queue.Queue()
         self.start = time.time()
         try:
             new_thread = threading.Thread(target=lambda x=1: new_gui(self.audio_file))
