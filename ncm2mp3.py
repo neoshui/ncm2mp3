@@ -20,6 +20,7 @@ import tkinter
 from tkinter import messagebox
 import customtkinter
 import threading
+from concurrent import futures
 
 ssl._create_default_https_context = ssl._create_unverified_context
 import mutagen.id3
@@ -415,55 +416,26 @@ def get_file(path):
     return audio_file, file_list
 
 
-def gui(audio_file):
-    manager = Manager()
-    return_dict = manager.dict()
-    AllTheardNumber = int(os.cpu_count() - 2)
-    time.sleep(2)
-
-    # multiprocessing.freeze_support()
-    # time.sleep(3)
-    if len(audio_file) < 1:
-        print('[MAIN]Netease Music or QQMusic Files No Found!')
-        os._exit(0)
-    if len(audio_file) < AllTheardNumber:
-        AllTheardNumber = len(audio_file)
-    t = [0, ] * AllTheardNumber
-
-    last = int(len(audio_file) % AllTheardNumber)
-    avg = int((len(audio_file) - last) / AllTheardNumber)
-    for ppo in range(0, AllTheardNumber):
-        ncmlist = []
-        if ppo == (AllTheardNumber - 1):
-            for o in range(int(avg * ppo), int(avg * (ppo + 1) + last)):
-                ncmlist.append(audio_file[o])
-            t[ppo] = Process(target=MultiThreadChild, args=(ncmlist, ppo, return_dict), )
-            t[ppo].daemon = True
-            t[ppo].start()
-
-        else:
-            for o in range(int(avg * ppo), int(avg * (ppo + 1))):
-                ncmlist.append(audio_file[o])
-            t[ppo] = Process(target=MultiThreadChild, args=(ncmlist, ppo, return_dict), )
-            t[ppo].daemon = True
-            t[ppo].start()
-
-    time.sleep(2)
-    print('[Main] Waiting until All Process Finish!')
-    try:
-        for k in t:
-            k.join()
-    except:
-        print('[!]Warning! Main Thread Exit!')
-    print('[MAIN]' + '[' + time.asctime() + ']')
-    if os.path.exists('ncm2music_error.txt'):
-        if os.path.getsize('ncm2music_error.txt') < 10:
-            DelFile('ncm2music_error.txt')
-        else:
-            print('Please see -> ncm2music_error.txt <- Log file!')
-    # delname()
-    print("[MAIN]ALL Jobs Finish!")
+def new_gui(audio_file):
+    print('audio_file', audio_file)
+    with futures.ProcessPoolExecutor() as executor:
+        res = executor.map(multi_process, audio_file)
+    print(res)
+    print('all_time:', time.time() - app.start)
     showMessage('所选目录中的文件已转换完成！', type='message', timeout=120)
+
+
+def multi_process(music1f):
+    if music1f.split('.')[-1] == 'ncm':
+        dump(music1f, 0)
+
+        print('ncm')
+    else:
+        QQconvert(music1f, 0)
+
+        print('qq')
+
+    return 0
 
 
 def showMessage(message, type, timeout=6000):
@@ -553,8 +525,9 @@ class App(customtkinter.CTk):
         self.start_flags = True
 
     def start_convert(self):
+        self.start = time.time()
         try:
-            new_thread = threading.Thread(target=lambda x=1: gui(self.audio_file))
+            new_thread = threading.Thread(target=lambda x=1: new_gui(self.audio_file))
             new_thread.setDaemon(True)
             new_thread.start()
             showMessage(f'开始转换，请等待转换完毕提示再关闭程序！三十秒后将自动关闭本提示窗口！ \n\n{self.file_list}',
@@ -568,3 +541,4 @@ if __name__ == '__main__':
     multiprocessing.freeze_support()
     app = App()
     app.mainloop()
+#     pyinstaller --noconfirm --onedir --windowed --add-data "<CustomTkinter Location>/customtkinter;customtkinter/"  -F "<Path to Python Script>"
