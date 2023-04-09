@@ -420,8 +420,8 @@ def new_gui(audio_file):
     print('audio_file', audio_file)
     with futures.ProcessPoolExecutor() as executor:
         res = executor.map(multi_process, audio_file)
-    print(res)
-    print('all_time:', time.time() - app.start)
+    print(len(list(res)))
+
     showMessage('所选目录中的文件已转换完成！', type='message', timeout=120)
 
 
@@ -429,11 +429,9 @@ def multi_process(music1f):
     if music1f.split('.')[-1] == 'ncm':
         dump(music1f, 0)
 
-        print('ncm')
     else:
         QQconvert(music1f, 0)
 
-        print('qq')
 
     return 0
 
