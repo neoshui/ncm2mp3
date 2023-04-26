@@ -18,7 +18,10 @@ ncm2mp3.py 主要功能基于 [Ncm2Music](https://github.com/crmmc/Ncm2Music) �
 ncm2mp3.spec : Pyinstaller 打包配置文件
 
 CustomTkinter 打包命令 :
+
+```bash
 pyinstaller --noconfirm --onedir --windowed --add-data "<CustomTkinter Location>/customtkinter;customtkinter/"  -F "<Path to Python Script>"
+```
 
 GUI 使用 [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter)
 
