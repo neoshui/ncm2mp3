@@ -22,6 +22,8 @@ from tkinter import messagebox
 import customtkinter
 import threading
 from concurrent import futures
+from io import BytesIO
+from lyricsgenius import Genius
 
 ssl._create_default_https_context = ssl._create_unverified_context
 import mutagen.id3
@@ -78,8 +80,9 @@ def TwoToOne(l1, l2):
     return ttty
 
 
-def GetLrcF(path, id, sname):
+def get_ncm_lrc(path, id, sname):
     try:
+
         lrc_url = 'http://music.163.com/api/song/lyric?os=pc&id=' + str(id) + '&lv=-1&kv=-1&tv=-1'
         # lrc_url = 'http://music.163.com/api/song/lyric?' + 'id=' + str(id) + '&lv=1&kv=1&tv=-1'
         lyric = requests.get(lrc_url, headers={
@@ -87,6 +90,8 @@ def GetLrcF(path, id, sname):
             'Host': 'music.163.com'})
         json_obj = lyric.text
         arhhc = json.loads(json_obj)
+
+        # return arhhc
 
     except:
 
@@ -159,7 +164,7 @@ def get_online_lrc(file_path):
         cryptor = AES.new(meta_key, AES.MODE_ECB)
         meta_data = unpad(cryptor.decrypt(meta_data))[6:]
         meta_data = json.loads(meta_data)
-        GetLrcF(file_path, meta_data['musicId'], meta_data['musicName'])
+        get_ncm_lrc(file_path, meta_data['musicId'], meta_data['musicName'])
     elif audio_type == 'mp3':
         mp3_info = MP3(file_path, ID3=EasyID3)
 
@@ -174,7 +179,7 @@ def CFG(a):
 
 
 # 网易云音乐解密源码 开始
-def dump(file_path, Thnom):
+def mcn2mp3(file_path, Thnom):
     print('0-------------file_path', file_path)
     core_key = binascii.a2b_hex("687A4852416D736F356B496E62617857")
     meta_key = binascii.a2b_hex("2331346C6A6B5F215C5D2630553C2728")
@@ -221,8 +226,8 @@ def dump(file_path, Thnom):
     image_size = f.read(4)
     image_size = struct.unpack('<I', bytes(image_size))[0]
     image_data = f.read(image_size)
-    file_name = meta_data['musicName'] + ' - ' + meta_data['artist'][0][
-        0] + '.' + meta_data['format']
+
+    file_name = meta_data['musicName'] + ' - ' + meta_data['artist'] + '.' + meta_data['format']
 
     file_name = CFG(file_name)
     if os.path.exists(file_name):
@@ -232,7 +237,7 @@ def dump(file_path, Thnom):
         print('[!]File is exist!')
         if (os.path.getsize(file_name) < (os.path.getsize(file_path) - (3 * 1024))):
             print('[!]Bad File!')
-            dump(file_path, Thnom)
+            mcn2mp3(file_path, Thnom)
             return 0
     else:
         print("\n" + '[+][Process:{}]Now '.format(Thnom) + '[' + str(meta_data['format']) + '][' + 'MusicID:' + str(
@@ -256,7 +261,8 @@ def dump(file_path, Thnom):
 
     path = file_path[::-1].split('/', 1)[1][::-1] + '/'
     file_name = file_path[::-1].split('/', 1)[1][::-1] + '/' + file_name
-    if len(image_data) < 1000:
+
+    if image_size < 1000:
         try:
             picurl = meta_data['albumPic']
             image_data = requests.get(picurl).content
@@ -264,6 +270,7 @@ def dump(file_path, Thnom):
             f = io.BytesIO()
             image_data = Image.open(io.BytesIO(image_data)).save(f, 'jpeg')
             image_data = f.getvalue()
+
         except:
             print("\n" + '[!][Process:{}][{}]Get Picture From Internet Error!'.format(Thnom, file_path))
     if meta_data['format'] == 'mp3':
@@ -271,10 +278,12 @@ def dump(file_path, Thnom):
 
         mp3_info = MP3(file_name, ID3=EasyID3)
         mp3_info['album'] = meta_data['album']
-        mp3_info['artist'] = meta_data['artist'][0][0]
+        mp3_info['artist'] = meta_data['artist']
         mp3_info['title'] = meta_data['musicName']
         mp3_info['discsubtitle'] = meta_data['alias']
-        mp3_info['lyricist'] = GetLrcF(path, music_id, music_lrc)
+
+        mp3_info['lyricist'] = get_ncm_lrc(path, music_id.replace('track-', ''), music_lrc)
+
         # mp3_info['lyricist'] = str('Convent By Ncm2Music. CopyRight 2018-2019. KGDsave SoftWare Studio')
         mp3_info.save()
         hh = ID3(file_name)
@@ -288,7 +297,7 @@ def dump(file_path, Thnom):
             open(music_lrc + '.jpg', 'wb').write(image_data)
             print("\n" + '[![Process{} : [{}]MP3 Tags Save Error!'.format(Thnom, file_path))
         try:
-            GetLrcF(path, music_id, music_lrc)
+            get_ncm_lrc(path, music_id.replace('track-', ''), music_lrc)
         except:
             print('MP3 Lyric Get Error!')
     elif meta_data['format'] == 'flac':
@@ -300,7 +309,7 @@ def dump(file_path, Thnom):
         audio['artist'] = meta_data['artist'][0][0]
         audio['comment'] = meta_data['alias']
 
-        audio['lyrics'] = GetLrcF(path, music_id, music_lrc)
+        audio['lyrics'] = get_ncm_lrc(path, music_id.replace('track-', ''), music_lrc)
         app = Picture()
         app.data = image_data
         app.type = mutagen.id3.PictureType.COVER_FRONT
@@ -316,7 +325,7 @@ def dump(file_path, Thnom):
             open(music_lrc + '.jpg', 'wb').write(image_data)
             print('[!][Process:{}][{}]Song Tags Has Been Saved On A SongInfo File!'.format(Thnom, file_path));
         try:
-            GetLrcF(path, music_id, music_lrc)
+            get_ncm_lrc(path, music_id.replace('track-', ''), music_lrc)
         except:
             print('[!][Process:{}][{}]FLAC lyric Get Error!'.format(Thnom, file_path))
     else:
@@ -378,8 +387,10 @@ def QQconvert(fin, RNUM):
 
     for i in range(0, len(ab1)):
         ab1[i] ^= QQmapL(i)
+
     afo.write(ab1)
     del (ab1)
+
     afi.close()
     afo.close()
     print('Process {}: Done decrypt {} --> {}'.format(fin, RNUM, fout))
@@ -394,7 +405,7 @@ def MultiThreadChild(list, Number, return_dict):
     for music1f in list:
 
         if music1f.split('.')[-1] == 'ncm':
-            dump(music1f, Number)
+            mcn2mp3(music1f, Number)
         else:
             QQconvert(music1f, Number)
 
@@ -426,7 +437,7 @@ def new_gui(audio_file):
 
 def multi_process(music1f):
     if music1f.split('.')[-1] == 'ncm':
-        dump(music1f, 0)
+        mcn2mp3(music1f, 0)
 
     else:
         QQconvert(music1f, 0)
@@ -526,7 +537,7 @@ class App(customtkinter.CTk):
         self.start = time.time()
         try:
             new_thread = threading.Thread(target=lambda x=1: new_gui(self.audio_file))
-            new_thread.setDaemon(True)
+            # new_thread.setDaemon(True)
             new_thread.start()
             showMessage(f'开始转换，请等待转换完毕提示再关闭程序！三十秒后将自动关闭本提示窗口！ \n\n{self.file_list}',
                         type='', timeout=30)
